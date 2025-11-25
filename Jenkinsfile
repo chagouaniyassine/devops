@@ -10,8 +10,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // checkout du repo et de la branche 'yassinebranch'
-                git branch: 'yassinebranch', url: 'https://github.com/chagouaniyassine/devops.git'
+                // checkout du repo et de la branche 'manel'
+                git branch: 'manel', url: 'https://github.com/chagouaniyassine/devops.git'
             }
         }
 
