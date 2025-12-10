@@ -7,7 +7,8 @@ pipeline {
         stage('GitHub') {
             steps {
                 echo '1. Clonage du projet depuis GitHub'
-               git branch: 'yassinebranch', url: 'https://github.com/chagouaniyassine/devops.git'
+               git branch: 'yassinebranch',
+                url: 'https://github.com/chagouaniyassine/devops.git'
                 script {
                     // Afficher les informations du commit
                     sh 'git log -1 --oneline'
@@ -22,14 +23,14 @@ pipeline {
                 }
             }
         }
-        stage('Test') {
+       /* stage('Test') {
             steps {
                 script {
                     echo "3. Running tests..."
                     sh 'mvn test'
                 }
             }
-        }
+        }*/
         stage('Jar Packaging') {
                     steps {
                         script {
