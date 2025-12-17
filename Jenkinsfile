@@ -87,10 +87,7 @@ pipeline {
                             def qg = waitForQualityGate()
                             echo "📊 Quality Gate: ${qg.status}"
 
-                            if (qg.status != 'OK') {
-                                echo "⚠️ Attention: Quality Gate non passée"
-                                // Continue quand même
-                            }
+
                         } catch (Exception e) {
                             echo "⚠️ Impossible de vérifier Quality Gate: ${e.message}"
                             echo "⏭️ On continue le pipeline..."
