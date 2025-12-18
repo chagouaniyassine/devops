@@ -13,5 +13,14 @@ pipeline {
                 )
             }
         }
+
+        stage('MVN SONARQUBE') {
+            steps {
+                // Utilisation de Maven pour lancer SonarQube
+                withMaven(maven: 'M2_HOME') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=mon-projet -Dsonar.host.url=http://localhost:9000 -Dsonar.login=<TOKEN>'
+                }
+            }
+        }
     }
 }
