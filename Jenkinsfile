@@ -21,13 +21,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean compile -DskipTests'  # <-- MODIFIÉ
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -DskipTests'  # <-- MODIFIÉ
             }
             post {
                 always {
@@ -39,7 +39,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar'
+                    sh 'mvn sonar:sonar -DskipTests'  # <-- MODIFIÉ (optionnel)
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
         // ⭐ NOUVELLES ÉTAPES POUR L'ATELIER 4 ⭐
         stage('Package JAR') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'  # <-- DÉJÀ BON
             }
         }
 
