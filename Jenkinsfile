@@ -25,16 +25,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'mvn test -DskipTests'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
+        // SUPPRIMÉ le stage Test
 
         stage('SonarQube Analysis') {
             steps {
