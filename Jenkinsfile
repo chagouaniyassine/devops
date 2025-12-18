@@ -3,25 +3,14 @@ pipeline {
 
     tools {
         maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
     stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
-            }
-        }
-
-        stage('Git') {
+        stage('Checkout') {
             steps {
                 git branch: 'manel2',
-                    url: 'https://github.com/chagouaniyassine/devops.git'
-            }
-        }
-
-        stage('Maven Version') {
-            steps {
-                sh 'mvn -version'
+                   url: 'https://github.com/chagouaniyassine/devops.git'
             }
         }
 
@@ -30,14 +19,24 @@ pipeline {
                 sh 'mvn clean compile'
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Pipeline réussi!'
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
         }
-        failure {
-            echo 'Pipeline échoué!'
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
         }
     }
 }
