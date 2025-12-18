@@ -33,26 +33,27 @@ pipeline {
                 '''
             }
         }
-        stage('Start Minikube') {
-    steps {
-        sh '''
-            # Démarrer Minikube s'il n'est pas en cours d'exécution
-            if ! minikube status | grep -q "Running"; then
-                echo "🚀 Starting Minikube..."
-                minikube start
-            else
-                echo "✅ Minikube is already running"
-            fi
-        '''
-    }
-}
 
         stage('Verify') {
             steps {
                 sh '''
                     kubectl rollout status deployment/spring-app -n devops --timeout=30s
                     echo "🎉 Deployment successful!"
-                    minikube service spring-service -n devops --url
+                    
+                    # Vérification simple sans Minikube
+                    echo "📊 Checking deployment status:"
+                    kubectl get deployments -n devops
+                    kubectl get pods -n devops
+                    
+                    echo "🔍 Pod details:"
+                    kubectl describe pods -n devops -l app=spring-app || true
+                    
+                    # Optionnel: Tester l'application (décommentez si vous voulez)
+                    # echo "🚀 Testing application..."
+                    # kubectl port-forward deployment/spring-app 8080:8080 -n devops --address=0.0.0.0 &
+                    # sleep 5
+                    # curl -s http://localhost:8080/actuator/health && echo "✅ Health check passed" || echo "⚠️ Health check failed"
+                    # pkill -f "port-forward" || true
                 '''
             }
         }
