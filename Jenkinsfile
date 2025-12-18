@@ -21,13 +21,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean compile -DskipTests'  # <-- MODIFIÉ
+                sh 'mvn clean compile -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test -DskipTests'  # <-- MODIFIÉ
+                sh 'mvn test -DskipTests'
             }
             post {
                 always {
@@ -39,22 +39,20 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar -DskipTests'  # <-- MODIFIÉ (optionnel)
+                    sh 'mvn sonar:sonar -DskipTests'
                 }
             }
         }
 
-        // ⭐ NOUVELLES ÉTAPES POUR L'ATELIER 4 ⭐
         stage('Package JAR') {
             steps {
-                sh 'mvn clean package -DskipTests'  # <-- DÉJÀ BON
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Utiliser Docker de Minikube
                     sh '''
                         eval $(minikube docker-env)
                         docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
