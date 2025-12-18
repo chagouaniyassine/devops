@@ -3,62 +3,40 @@ pipeline {
 
     tools {
         maven 'M2_HOME'
-    }
-
-    environment {
-        DOCKER_IMAGE = 'manelhomri2/spring-k8s-app'
-        K8S_NAMESPACE = 'devops'
+        jdk 'JAVA_HOME'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'manel2',
-                url: 'https://github.com/chagouaniyassine/devops.git'
+                   url: 'https://github.com/chagouaniyassine/devops.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Test') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${BUILD_NUMBER}")
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('SonarQube Analysis') {
             steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                        docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}").push()
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn sonar:sonar'
                 }
             }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh """
-                    kubectl set image deployment/spring-app \
-                    spring-app=${DOCKER_IMAGE}:${BUILD_NUMBER} \
-                    -n ${K8S_NAMESPACE}
-                """
-            }
-        }
-    }
-
-    post {
-        success {
-            echo '🎉 Déploiement réussi sur Kubernetes !'
-        }
-        failure {
-            echo '❌ Déploiement échoué'
         }
     }
 }
