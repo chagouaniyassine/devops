@@ -16,10 +16,8 @@ pipeline {
 
         stage('MVN SONARQUBE') {
             steps {
-                // Utilisation de Maven pour lancer SonarQube
-                withMaven(maven: 'M2_HOME') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=mon-projet -Dsonar.host.url=http://localhost:9000 -Dsonar.login=<TOKEN>'
-                }
+                // Remplace <TOKEN> par ton token SonarQube et mon-projet par la clé de ton projet
+                sh 'mvn clean install sonar:sonar -Dsonar.projectKey=mon-projet -Dsonar.host.url=http://localhost:9000 -Dsonar.login=<TOKEN>'
             }
         }
     }
