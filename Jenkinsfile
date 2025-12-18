@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         K8S_NAMESPACE = 'devops'
+        DOCKER_IMAGE = 'manelhomri2/monimage-java:1.0'
     }
 
     stages {
@@ -26,10 +27,11 @@ pipeline {
         stage('Deploy to K8s') {
             steps {
                 sh '''
-                    # Just update the deployment with any image
+                    echo "🚀 Deploying ${DOCKER_IMAGE} to Kubernetes..."
+                    kubectl config use-context minikube
                     kubectl set image deployment/spring-app \
-                    spring-app=springio/gs-spring-boot-docker:latest \
-                    -n devops
+                    spring-app=${DOCKER_IMAGE} \
+                    -n ${K8S_NAMESPACE}
                 '''
             }
         }
@@ -37,23 +39,29 @@ pipeline {
         stage('Verify') {
             steps {
                 sh '''
-                    kubectl rollout status deployment/spring-app -n devops --timeout=30s
-                    echo "🎉 Deployment successful!"
+                    echo "🔍 Verifying deployment of ${DOCKER_IMAGE}..."
+                    kubectl rollout status deployment/spring-app -n ${K8S_NAMESPACE} --timeout=120s
+                    echo "✅ Deployment successful!"
                     
-                    # Vérification simple sans Minikube
-                    echo "📊 Checking deployment status:"
-                    kubectl get deployments -n devops
-                    kubectl get pods -n devops
+                    echo "📊 Deployment status:"
+                    kubectl get deployments -n ${K8S_NAMESPACE} -o wide
                     
-                    echo "🔍 Pod details:"
-                    kubectl describe pods -n devops -l app=spring-app || true
+                    echo "🐳 Pods status:"
+                    kubectl get pods -n ${K8S_NAMESPACE} -o wide
                     
-                    # Optionnel: Tester l'application (décommentez si vous voulez)
-                    # echo "🚀 Testing application..."
-                    # kubectl port-forward deployment/spring-app 8080:8080 -n devops --address=0.0.0.0 &
-                    # sleep 5
-                    # curl -s http://localhost:8080/actuator/health && echo "✅ Health check passed" || echo "⚠️ Health check failed"
-                    # pkill -f "port-forward" || true
+                    # Attendre que le pod soit prêt
+                    sleep 15
+                    
+                    # Afficher les logs
+                    POD_NAME=$(kubectl get pods -n ${K8S_NAMESPACE} -l app=spring-app -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+                    if [ ! -z "$POD_NAME" ]; then
+                        echo "📋 Logs from pod $POD_NAME:"
+                        kubectl logs -n ${K8S_NAMESPACE} $POD_NAME --tail=30 || echo "⚠️ Cannot get logs yet"
+                    else
+                        echo "⚠️ No pod found with label app=spring-app"
+                    fi
+                    
+                    echo "🎉 VOTRE IMAGE ${DOCKER_IMAGE} EST DÉPLOYÉE AVEC SUCCÈS !"
                 '''
             }
         }
@@ -62,9 +70,12 @@ pipeline {
     post {
         success {
             echo '🎉 ATELIER 4 COMPLÉTÉ ! Jenkins + Kubernetes fonctionnent !'
+            echo '✅ Votre propre image Docker est déployée sur K8s !'
+            echo '📦 Image: manelhomri2/monimage-java:1.0'
         }
         failure {
             echo '❌ Something went wrong'
+            echo '🔧 Check: 1) Minikube running 2) kubectl config 3) Docker Hub access'
         }
     }
 }
